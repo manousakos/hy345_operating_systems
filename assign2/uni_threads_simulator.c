@@ -30,6 +30,7 @@ enum BusState{
 struct Student {
   int AM;
   char dept[15];
+  int bus_Stop; 
 };
 /* each dept has a distinct 1st char that will help us with the selection
 of the semaphores:
@@ -39,7 +40,7 @@ physics: p
 maths: m
 chem: h
 */
-
+struct Student *map;
 struct Student **State_Array;
 
 /*This function checks if the bus has reached stop : stop  
@@ -232,8 +233,9 @@ void *bus(void){
       if( prevStop = -1) *busCurrentStop = 1;
       else  *busCurrentStop = -1;
 
-
-      printf("We arrived at the bus stop \n");
+      if( * busCurrentStop== -1) printf("We arrived at the bus stop A \n");
+      else 
+      printf("We arrived at the bus stop B \n");
       busState = WAIT;
     }
   }
@@ -292,13 +294,17 @@ struct Student **initDS(struct Student **states , int N , int numbStudents){
   int j;
   char testStr[7];  
 
+  printf("AAAAA Pointer : %p\n", states);
   // init all to nothing
   for(  i =0 ; i< 4 ; i++ ){
+    //if( states[i][j].AM == NULL ) exit(1);
     if( i == 0 ){
       for(j = 0; j<N ; j++){
         states[i][j].AM = 0; 
         
         strcpy( states[i][j].dept, "" );
+      
+        printf(" [ %d , %s ] ", states[i][j].AM ,states[i][j].dept );
       } 
       printf("We init'd the 1st row.\n");
     }
@@ -306,7 +312,11 @@ struct Student **initDS(struct Student **states , int N , int numbStudents){
       for(j = 0; j< numbStudents ; j++){
         states[i][j].AM = 0; 
         strcpy( states[i][j].dept, "" );
+
+        printf(" [ %d , %s ] ", states[i][j].AM ,states[i][j].dept );
       } 
+      
+      printf("We init'd the %dst row.\n",i);
     }
   }
 
@@ -342,10 +352,54 @@ struct Student **initDS(struct Student **states , int N , int numbStudents){
     }
   }   
 
-  printDS(states, numbStudents, N);
+  printf("Pointer : %p\n", states);
+  // printDS(states, numbStudents, N);
   return states;
 }
 
+struct Student * newInit( struct Student map[], int numbStudents, int N){
+
+  int i;
+  int ran;
+  for ( i = 0 ; i < sizeof(map) ; i++ ){
+    switch(ran){
+      case 0:
+        map[i].AM = i;
+        strcpy(map[i].dept, "csd");
+        map[i].bus_Stop = -1;
+        break;
+      case 1:
+        map[i].AM = i;
+        strcpy(map[i].dept, "physics");
+        map[i].bus_Stop = -1;
+        break;
+      case 2:
+        map[i].AM = i;
+        strcpy(map[i].dept, "maths");
+        map[i].bus_Stop = -1;
+        break;
+      case 3:
+        map[i].AM = i;
+        strcpy(map[i].dept, "chem");
+        map[i].bus_Stop = -1;
+        break;
+      default:
+    }
+  
+  }
+
+  return map;
+}
+
+
+void newPrintDS( struct Student map[], int numbStudent, int N){
+  int i;
+
+  for( i =0; i < sizeof(map); i++){
+
+    printf("[ %d  %s  %d ]\n", map[i].AM, map[i].dept, map[i].bus_Stop);
+  }
+}
 
 
 int main(void){
@@ -361,21 +415,7 @@ int main(void){
   
   
   srand(time(NULL)); 
-  //pthread_mutex_init(&mutex, NULL);
-  
-/* the struct Bus_State has at a total N seats,
- * and the rest of the structs of the States have no real limits,
- * so we allocate space of size struct Student * NumberOfStudents 
- * */ 
-
-/* the states are 4 so we only need to allocate space for 4 struct Student ** */
-  State_Array = malloc(4*sizeof( struct Student * ));
-    
-  for(i = 0; i<4 ; i++){
-    //if( i == 0 ) State_Array[i] = malloc( N * sizeof(struct Student)); // bus only has N seats
-    //else 
-      State_Array[i]=malloc( numbStudents * sizeof(struct Student));        // TODO fix this warning
-  }
+   
   
   busCurrentStop = malloc(sizeof(int) );
   
@@ -395,23 +435,11 @@ int main(void){
     return -1;
   }
   
-  /*validd = pthread_create(&stud, NULL, student(5050), NULL); */
+  
+  
+  validd = pthread_create(&buss, NULL, bus(), NULL );
 
-  printf("Lets Initialise our Students.\n");
-  State_Array = initDS(State_Array, N, numbStudents);
-  
-  printf("We succesfully Initialised our students.\n");
-  for(i =0; i<4 ; i++) printf("Here %d : %p ", i,State_Array);
-  printDS(State_Array, numbStudents,N);
-  
-  validd = pthread_create(&buss, NULL, bus, NULL );
-
- for(i = 0; i<4 ; i++){
-    if( i == 0 ) free( State_Array[i] );
-    else free( State_Array[i] );
-  }
-  
-  free(State_Array);
+ 
 
 
 
